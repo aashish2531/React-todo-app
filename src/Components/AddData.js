@@ -1,6 +1,5 @@
 import React , {Component} from 'react'
 import axios from 'axios'
-import {Link} from 'react-router-dom'
 
 class AddData extends Component{
     constructor(props){
@@ -19,16 +18,22 @@ class AddData extends Component{
 
     submitHandler = e => {
         e.preventDefault()
+        const clear_obj = Object.assign({},this.state);
+        for(let key in clear_obj){
+        clear_obj[key] = ' ';
+        }
         axios.post('https://todo-app-apis.herokuapp.com/task', this.state)
         .then(response => {
             console.log(response)
             alert("Data Added Successfully ")
+            this.setState(clear_obj);
         })
         .catch(error => {
             console.log("error");
         })
+       
+       
     }
-
 
     render(){
         const { name, description, dueDate, priority} = this.state

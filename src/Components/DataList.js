@@ -7,7 +7,8 @@ class DataList extends Component{
 
         this.state = {
             posts: [],
-            search: ''
+            search: '',
+            deleteMsg:""
         }
         this.onchange = this.onchange.bind(this)
         this.onSort = this.onSort.bind(this)
@@ -17,13 +18,18 @@ class DataList extends Component{
         const data = this.state.posts;
         data.sort((a,b) => a[sortKey].localeCompare(b[sortKey]))
         this.setState({data})
-      }
+    }
 
     onchange = (e) => {
         this.setState({ search: e.target.value });
         }
 
     componentDidMount(){
+        this.fetchData();
+        
+    }
+
+    fetchData=()=>{
         axios.get('https://todo-app-apis.herokuapp.com/task')
         .then(response => {
             this.setState({posts: response.data})
@@ -33,45 +39,62 @@ class DataList extends Component{
         })
     }
 
-    deleteData(id){
+      deleteData(id){
         axios.delete(`https://todo-app-apis.herokuapp.com/task/${id}`)
         .then(response => {
-            this.setState({posts: response.data})
-            alert("Data Removed !")
+            if(response.data){
+                alert("Data removed")
+                this.fetchData();
+            }
         })
         .catch(error => {
-            alert("Data not removed")
+            console.log(error);
+            this.setState({posts:[]})
+            // alert("Data not removed")
         })
     }
-    handleEdit = (id, name, description, dueDate, priority) => {
+
+      handleEdit = (id, name, description, dueDate, priority) => {
         console.log( this.props)
         this.props.history.push(`/updateData/${id}`)
-        
-        // this.setState({ userName: name , userDescription: description , userDate: dueDate, userPrio: priority });
-        // axios.put(`https://todo-app-apis.herokuapp.com/task/${id}`, {
-        //     name: this.state.name,
-        //     description: this.state.description,
-        //     dueDate: this.state.dueDate,
-        //     priority: this.state.priority
-        // })
-        //   .then(response => {
-        //     this.setState({ posts: response.data });
-        //   })
-        //   .catch(error => {
-        //     console.log(error);
-        //   });
       }
       updateSearch(event){
-          this.setState({search: event.target.value.substr(0,20)});
+        this.setState({search: event.target.value.substr(0,20)});
       }
+
+      activeEdit = (post) => {
+         const formData = {
+             name: "Done",
+             description: post.description,
+             dueDate: post.dueDate.split("T")[0],
+             priority: post.priority
+         }
+
+         axios.put(`https://todo-app-apis.herokuapp.com/task/${post._id}`,formData)
+             .then(response => {  
+                if(response.data){
+                    this.fetchData();
+                 }
+            //    alert("Done !")
+            //    this.setState({posts: removeArr,deleteMsg:response.data})
+                //  this.setState({ posts: response.data });
+             })
+             .catch(error => {
+                 alert("Error")
+                 this.setState({posts: []})
+             });
+       }
 
     render(){
         const { search } = this.state;
-        const {posts , errorMsg} = this.state
+        const {posts , errorMsg} = this.state;
+        let filteredClients;
 
-        const filteredClients = posts.filter( post =>{
-            return post.name.toLowerCase().indexOf( search.toLowerCase() ) !== -1
-            })
+        if(posts){
+            filteredClients = posts.filter( post =>{
+                return post.name.toLowerCase().indexOf( search.toLowerCase() ) !== -1
+                })
+        }
 
         return(
             <div className="ml30 scrl"> 
@@ -80,27 +103,28 @@ class DataList extends Component{
                 <table className="scrl">
                     <thead>
                     <tr>
-                    <th onClick={e => this.onSort(e, 'name')}>Name</th> 
-                    <th onClick={e => this.onSort(e, 'description')}>Description</th>
-                    <th onClick={e => this.onSort(e, 'dueDate')}>Due Date</th>
+                    <th scope="col" onClick={e => this.onSort(e, 'name')}><a href="#" class="sort-by">Name</a></th>
+                    <th>Description</th>
+                    <th onClick={e => this.onSort(e, 'dueDate')} scope="col" ><a href="#" class="sort-by">Date</a></th>
                     <th>Priority</th>
                     <th>Status</th>
                     <th>Edit</th>
                     <th>Delete</th>
                     </tr>
                     </thead> 
-                    </table>
+                    
                 {
                     filteredClients.length ?
                     filteredClients.map((post, index) => 
+                    
                         <tr key={post._id} >
                         <td>{post.name}</td>
                         <td>{post.description}</td>
-                        <td>{post.dueDate}</td>
+                        <td>{post.dueDate.split("T")[0]}</td>
                         <td>{post.priority}</td>
-                        <td><button className="btn btn-sm">Active</button></td>
-                        <button className="btn-primary btn-sm" onClick={() => this.handleEdit(post._id, post.name, post.description, post.dueDate, post.priority)}>Edit</button>
-                        <td><button className="btn-danger btn-sm" onClick={ () => this.deleteData(post._id) }>Remove</button></td>
+                        <td><button className={ post.name === 'Done' ? 'btn btn-sm btn-light' : 'btn btn-sm btn-info'} onClick={() => this.activeEdit(post)}>{ post.name === 'Done' ? 'Inactive' : 'Active'}</button></td>                        
+                       <td> <button className="btn btn-primary btn-sm" onClick={() => this.handleEdit(post._id, post.name, post.description, post.dueDate, post.priority)}>Edit</button></td>
+                        <td><button className="btn btn-danger btn-sm" onClick={ () => this.deleteData(post._id) }>Remove</button></td>
                         </tr>
                         
                     ) : null
@@ -108,6 +132,7 @@ class DataList extends Component{
                 {
                     errorMsg ? <div>{errorMsg}</div> : null
                 }
+                </table>
                 </div>
         )
     }

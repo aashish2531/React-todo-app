@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import axios from 'axios'
 
-
 class UpdateData extends Component {
 
     state = {
@@ -11,7 +10,7 @@ class UpdateData extends Component {
         priority: '',
         _id:''
     }
-
+  
     componentDidMount() {
         const id = this.props.match.params.id
         axios.get(`https://todo-app-apis.herokuapp.com/task/${id}`)
@@ -24,26 +23,12 @@ class UpdateData extends Component {
         this.setState({ [e.target.name]: e.target.value })
     }
 
-    // handleEdit = (id) => {
-        
-    //   const formData = {
-    //         name: this.state.name,
-    //         description: this.state.description,
-    //         dueDate: this.state.dueDate,
-    //         priority: this.state.priority
-    //     }
-    //     alert("i am here")
-    //     axios.put(`https://todo-app-apis.herokuapp.com/task/${id}`,formData)
-    //         .then(response => {  
-    //             // this.setState({ posts: response.data });
-    //         })
-    //         .catch(error => {
-    //             alert("Error")
-    //         });
-    // }
-
     handleEdit = (e) => {
         e.preventDefault()
+        const clear_obj = Object.assign({},this.state);
+            for(let key in clear_obj){
+            clear_obj[key] = '';
+            }
         const id = this.props.match.params.id
      
         const formData = {
@@ -55,6 +40,7 @@ class UpdateData extends Component {
           axios.put(`https://todo-app-apis.herokuapp.com/task/${id}`,formData)
               .then(response => {  
                 alert("Data updated Sucessfully !")
+                this.setState(clear_obj);
                   // this.setState({ posts: response.data });
               })
               .catch(error => {
@@ -62,17 +48,12 @@ class UpdateData extends Component {
               });
       }
 
-    // onSubmit=(formData)=>{
-
-    //     this.props.handleEdit(this.props.match.params._id, formData)
-    // }
-
     render() {
-        const { posts, errorMsg, name, description, dueDate, priority, _id } = this.state
+        const { name, description, dueDate, priority } = this.state
         return (
             <div className="ml30" >
                 <h2 className="mb20">Updating Tasks...</h2>
-                <form  onSubmit={this.handleEdit}>
+                <form id="create-course-form"  onSubmit={this.handleEdit}>
                     <div className="form-group">
                         <label className="control-label col-sm-1">Name:</label>
                         <div className="col-sm-11">
@@ -88,7 +69,9 @@ class UpdateData extends Component {
                     <div className="form-group">
                         <label className="control-label col-sm-1">Due Date:</label>
                         <div className="col-sm-11">
-                            <input className="form-control" type="date" format=' dd/mm/yyyy'  placeholder="Enter Date..." name="dueDate" value={dueDate} onChange={this.changeHandler} />
+                            <input className="form-control" type="date"   placeholder="Enter Date..." name="dueDate" value={
+                                dueDate.split("T")[0]
+                                } onChange={this.changeHandler} />
                         </div>
                     </div>
                     <div className="form-group">
@@ -97,7 +80,7 @@ class UpdateData extends Component {
                             <input className="form-control" placeholder="Enter Priority..." type="number" name="priority" value={priority} onChange={this.changeHandler} />
                         </div>
                     </div>
-                    <button className="btn" type="submit">Submit</button>
+                    <button className="btn" type="submit" onClick = {this.cancelCourse}>Submit</button>
 
                 </form>
                 

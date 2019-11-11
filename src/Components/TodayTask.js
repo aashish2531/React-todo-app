@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import axios from 'axios'
-import Moment from 'react-moment';
 
 class TodayTask extends Component{
 
@@ -9,8 +8,9 @@ class TodayTask extends Component{
 
         this.state = {
             posts: [],
-            search: '',
-            startDate: new Date().toLocaleString("sv-SE",{year:"numeric",month:"2-digit", day:"2-digit"})
+            startDate: new Date().toLocaleString("sv-SE",{year:"numeric",month:"2-digit", day:"2-digit"}),
+            reRender: false
+
         }
         this.onchange = this.onchange.bind(this)
         this.onSort = this.onSort.bind(this)
@@ -27,6 +27,11 @@ class TodayTask extends Component{
         }
 
     componentDidMount(){
+        this.fetchData();
+        
+    }
+
+    fetchData=()=>{
         axios.get('https://todo-app-apis.herokuapp.com/task')
         .then(response => {
             this.setState({posts: response.data})
@@ -39,83 +44,99 @@ class TodayTask extends Component{
     deleteData(id){
         axios.delete(`https://todo-app-apis.herokuapp.com/task/${id}`)
         .then(response => {
-            this.setState({posts: response.data})
-            alert("Data Removed !")
+            if(response.data){
+                alert("Data removed")
+                this.fetchData();
+            }
         })
         .catch(error => {
-            alert("Data not removed")
+            this.setState({posts:[]})
         })
     }
     handleEdit = (id, name, description, dueDate, priority) => {
         console.log( this.props)
         this.props.history.push(`/updateData/${id}`)
-        
-        // this.setState({ userName: name , userDescription: description , userDate: dueDate, userPrio: priority });
-        // axios.put(`https://todo-app-apis.herokuapp.com/task/${id}`, {
-        //     name: this.state.name,
-        //     description: this.state.description,
-        //     dueDate: this.state.dueDate,
-        //     priority: this.state.priority
-        // })
-        //   .then(response => {
-        //     this.setState({ posts: response.data });
-        //   })
-        //   .catch(error => {
-        //     console.log(error);
-        //   });
       }
+
+      activeEdit = (post) => {
+       // console.log(this.props.history)
+        //console.log(this.state.posts[2].name)
+        const formData = {
+            name: "Done",
+            description: post.description,
+            dueDate: post.dueDate.split("T")[0],
+            priority: post.priority
+        }
+            alert("Done !")
+            axios.put(`https://todo-app-apis.herokuapp.com/task/${post._id}`,formData)
+            .then(response => {  
+                if(response.data){
+                    this.fetchData();
+                 }
+            //   alert("Data updated Sucessfully !")
+             // this.setState({reRender: true})
+                // this.setState({ posts: response.data });
+            })
+            .catch(error => {
+                alert("Error")
+                this.setState({posts: []})
+            });
+        
+      }
+
       updateSearch(event){
           this.setState({search: event.target.value.substr(0,1)});
       }
 
-    render(){
-        const { search } = this.state;
-        const {posts , errorMsg, startDate} = this.state
+      clearInput(){
+          alert("cleared")
+      }
 
-        // const filteredClients = posts.filter( post =>{
-        //     return post.name.toLowerCase().indexOf( search.toLowerCase() ) !== -1
-        //     })
+    render(){
+        //console.log(this.state)
+        const {posts , errorMsg, startDate} = this.state
 
         const filteredClients = posts.filter( post =>{
             return post.dueDate.indexOf( startDate ) !== -1
             })
 
-      
-
         return(
             <div className="ml30"> 
             <h2>Today's Tasks to do...</h2>
-            {/* <input onChange={this.onchange} type="search" className="form-control" placeholder="Search your name here..."/> */}
                 <table >
                     <thead>
                     <tr>
                     <th onClick={e => this.onSort(e, 'name')}>Name</th> 
-                    <th onClick={e => this.onSort(e, 'description')}>Description</th>
-                    <th onClick={e => this.onSort(e, 'dueDate')}>Due Date</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
                     <th >Priority</th>
                     <th>Status</th>
                     <th>Edit</th>
                     <th>Delete</th>
                     </tr>
                     </thead> 
-                    </table>
+                    
                 {
                     filteredClients.length ?
                     filteredClients.map((post, index) => 
+                   
                         <tr key={post._id}>
                         <td>{post.name}</td>
                         <td>{post.description}</td>
-                        <td>{post.dueDate}</td>
+                        <td>{post.dueDate.split("T")[0]}</td>
                         <td>{post.priority}</td>
-                        <td><button className="btn btn-sm">Active</button></td>
-                        <button className="btn-primary btn-sm" onClick={() => this.handleEdit(post._id, post.name, post.description, post.dueDate, post.priority)}>Edit</button>
-                        <td><button className="btn-danger btn-sm" onClick={ () => this.deleteData(post._id) }>Delete</button></td>
+                        <td><button className={ post.name === 'Done' ? 'btn btn-sm btn-light' : 'btn btn-sm btn-info'} onClick={() => this.activeEdit(post)}>{ post.name === 'Done' ? 'Inactive' : 'Active'}</button></td>                        
+                      <td>  <button className="btn btn-primary btn-sm" onClick={() => this.handleEdit(post._id, post.name, post.description, post.dueDate, post.priority)}>Edit</button></td>
+                        <td><button className="btn btn-danger btn-sm" onClick={ () => this.deleteData(post._id) }>Delete</button></td>
                         </tr>
+                        
                     ) : null
                 }
                 {
                     errorMsg ? <div>{errorMsg}</div> : null
                 }
+                
+                </table>
                 </div>
         )
     }
