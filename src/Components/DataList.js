@@ -38,6 +38,7 @@ class DataList extends Component{
         })
     }
 
+    //function for deleting data with ID
       deleteData(id){
         if (window.confirm("Delete the item?")) {
             axios.delete(`https://todo-app-apis.herokuapp.com/task/${id}`)
