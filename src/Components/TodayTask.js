@@ -42,16 +42,20 @@ class TodayTask extends Component{
     }
 
     deleteData(id){
-        axios.delete(`https://todo-app-apis.herokuapp.com/task/${id}`)
+        if (window.confirm("Delete the item?")) {
+            axios.delete(`https://todo-app-apis.herokuapp.com/task/${id}`)
         .then(response => {
             if(response.data){
-                alert("Data removed")
+               
                 this.fetchData();
             }
         })
         .catch(error => {
+            console.log(error);
             this.setState({posts:[]})
+            // alert("Data not removed")
         })
+          }
     }
     handleEdit = (id, name, description, dueDate, priority) => {
         console.log( this.props)
@@ -59,8 +63,6 @@ class TodayTask extends Component{
       }
 
       activeEdit = (post) => {
-       // console.log(this.props.history)
-        //console.log(this.state.posts[2].name)
         const formData = {
             name: "Done",
             description: post.description,
@@ -84,13 +86,10 @@ class TodayTask extends Component{
         
       }
 
-      updateSearch(event){
-          this.setState({search: event.target.value.substr(0,1)});
-      }
+    //   updateSearch(event){
+    //       this.setState({search: event.target.value.substr(0,1)});
+    //   }
 
-      clearInput(){
-          alert("cleared")
-      }
 
     render(){
         //console.log(this.state)
@@ -106,10 +105,10 @@ class TodayTask extends Component{
                 <table >
                     <thead>
                     <tr>
-                    <th onClick={e => this.onSort(e, 'name')}>Name</th> 
+                    <th onClick={e => this.onSort(e, 'name')} scope="col"><a href="#" class="sort-by">Name</a></th> 
                     <th>Description</th>
                     <th>Due Date</th>
-                    <th >Priority</th>
+                    <th>Priority</th>
                     <th>Status</th>
                     <th>Edit</th>
                     <th>Delete</th>

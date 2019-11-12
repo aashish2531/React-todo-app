@@ -41,6 +41,7 @@ class UpdateData extends Component {
               .then(response => {  
                 alert("Data updated Sucessfully !")
                 this.setState(clear_obj);
+                this.props.history.push("/dataList")
                   // this.setState({ posts: response.data });
               })
               .catch(error => {
@@ -70,7 +71,7 @@ class UpdateData extends Component {
                         <label className="control-label col-sm-1">Due Date:</label>
                         <div className="col-sm-11">
                             <input className="form-control" type="date"   placeholder="Enter Date..." name="dueDate" value={
-                                dueDate.split("T")[0]
+                                dueDate.substring(0,10)
                                 } onChange={this.changeHandler} />
                         </div>
                     </div>

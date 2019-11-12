@@ -26,9 +26,8 @@ class DataList extends Component{
 
     componentDidMount(){
         this.fetchData();
-        
     }
-
+    //Function for fatching data
     fetchData=()=>{
         axios.get('https://todo-app-apis.herokuapp.com/task')
         .then(response => {
@@ -40,21 +39,24 @@ class DataList extends Component{
     }
 
       deleteData(id){
-        axios.delete(`https://todo-app-apis.herokuapp.com/task/${id}`)
+        if (window.confirm("Delete the item?")) {
+            axios.delete(`https://todo-app-apis.herokuapp.com/task/${id}`)
         .then(response => {
             if(response.data){
-                alert("Data removed")
+               
                 this.fetchData();
             }
         })
         .catch(error => {
             console.log(error);
             this.setState({posts:[]})
-            // alert("Data not removed")
         })
+          }
+       
     }
 
-      handleEdit = (id, name, description, dueDate, priority) => {
+    // Function to redirect page to update with id on click of edit button
+      handleEdit = (id) => {
         console.log( this.props)
         this.props.history.push(`/updateData/${id}`)
       }
@@ -75,9 +77,6 @@ class DataList extends Component{
                 if(response.data){
                     this.fetchData();
                  }
-            //    alert("Done !")
-            //    this.setState({posts: removeArr,deleteMsg:response.data})
-                //  this.setState({ posts: response.data });
              })
              .catch(error => {
                  alert("Error")

@@ -102,3 +102,7 @@ a.sort-by:after {
 	border-top-color: white;
 	margin-top: 1px;
 }
+.validationErr{
+  color: red;
+  margin-left: 10%;
+}
